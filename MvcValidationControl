@@ -1,0 +1,57 @@
+
+.alert-icon {
+    float: left;
+    height: 30px;
+    width: 30px;
+}
+
+.alert-icon-success {
+    background-image: url('Images/success.png');
+    background-size: cover;
+}
+
+.alert-icon-warning {
+    background-image: url('Images/warning.png');
+    background-size: cover;
+}
+
+.alert-icon-danger {
+    background-image: url('Images/error.png');
+    background-size: cover;
+}
+
+.alert-icon-info {
+    background-image: url('Images/info.png');
+    background-size: cover;
+}
+
+.PaddingDiv {
+    padding-left: 15px;
+}
+
+/*.input-validation-error {
+    background-color:#efcaca;
+    border-color: #c33131;
+}*/
+
+.field-validation-error {
+    color: #b10000;
+    font-size: smaller;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.input-validation-error {
+    border: 2px ridge #ff0000;
+}
+
+.validation-summary-errors {
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.validation-summary-valid {
+    display: none;
+}
