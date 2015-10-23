@@ -1,3 +1,360 @@
+MvcValidation
+
+
+
+//Models/login.cs
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Web;
+
+namespace MvcValidation.Models
+{
+    public class Login
+    {
+        private string _Username;
+        [Required(ErrorMessage = "*")]
+        public string Username
+        {
+            get { return _Username; }
+            set { _Username = value; }
+        }
+
+
+        private string _password;
+        [Required(ErrorMessage = "*")]
+        public string Password
+        {
+            get { return _password; }
+            set { _password = value; }
+        }
+    }
+}
+
+//HomeController
+
+using MvcValidation.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace MvcValidation.Controllers
+{
+    public class HomeController : Controller
+    {
+        public ActionResult Index()
+        {
+
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Index(string model)
+        {
+            MessageBox message = new MessageBox();
+            ViewBag.messageBox = message;
+            return View();
+        }
+
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Login(Models.Login login)
+        {
+            MessageBox message = new MessageBox();
+            if (ModelState.IsValid)
+            {
+                if (login.Username == "tukaramb" && login.Password == "pass")
+                {
+                    message.Type = MessageType.Success;
+                    message.MessageTitle = "Login Successful ";
+                    message.SubMessage = "Welcome !!! You are logged in successfully ";
+                }
+                else if (login.Username == "tukaramb" && login.Password != "pass")
+                {
+                    message.Type = MessageType.Failure;
+                    message.MessageTitle = "You have entered wrong Password. You are left with -- more attempts.";
+                    message.SubMessage = "Try again to login with valid User Name and Password";
+                }
+                else
+                {
+                    message.Type = MessageType.Failure;
+                    message.MessageTitle = "Authentication Failed. The User Name and Password you entered is incorrect.";
+                    message.SubMessage = "Verify the User Name OR if you have forgot your password then click on 'Forget Password' link to get new password.";
+                }
+            }
+            else
+            {
+                message.Type = MessageType.Warning;
+                message.MessageTitle = "Warning Message";
+                if (login.Username == "" || login.Username == null)
+                {
+                    message.SubMessage = "Please Enter the following Details.";
+                    message.ErrorList = "Please Enter the User ID.";
+                }
+                if ((login.Username == "" || login.Username == null) && (login.Password == "" || login.Password == null))
+                {
+                    message.ErrorList += ",";
+                }
+                if (login.Password == "" || login.Password == null)
+                {
+                    message.SubMessage = "Please Enter the following Details.";
+                    message.ErrorList += "Please Enter Password.";
+                }
+            }
+            ViewBag.messageBox = message;
+            return View();
+        }
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+    }
+}
+
+Utilities folder
+
+Constants.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace MvcValidation.Utilities
+{
+    public enum MessageType
+    {
+        None = 0,
+        Success = 1,
+        Failure = 2,
+        Warning = 3,
+        Information = 4
+    }
+}
+
+======================================
+
+CustomHtmlHelpers.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace MvcValidation.Utilities
+{
+    public static class CustomHtmlHelpers
+    {
+        public static MvcHtmlString ValidationWarning(this HtmlHelper htmlHelper, MessageBox messageBox)
+        {
+            var cssClass = string.Empty;
+            var cssClassImage = string.Empty;
+            var cssClassText = string.Empty;
+            if (messageBox.Type == MessageType.Information)
+            {
+                cssClass = "alert-info padding alert row";
+                cssClassImage = "alert-icon-info alert-icon col-xs-1 col-sm-1 col-lg-1 col-md-1";
+                cssClassText = "col-xs-8 col-sm-8 col-lg-8 col-md-8";
+            }
+            else if (messageBox.Type == MessageType.Success)
+            {
+                cssClass = "alert-success padding alert row";
+                cssClassImage = "alert-icon-success alert-icon col-xs-1 col-sm-1 col-lg-1 col-md-1";
+                cssClassText = "col-xs-8 col-sm-8 col-lg-8 col-md-8";
+            }
+            else if (messageBox.Type == MessageType.Failure)
+            {
+                cssClass = "alert-danger padding alert row";
+                cssClassImage = "alert-icon-danger alert-icon col-xs-1 col-sm-1 col-lg-1 col-md-1";
+                cssClassText = "col-xs-8 col-sm-8 col-lg-8 col-md-8";
+            }
+            else
+            {
+                cssClass = "alert-warning padding alert row";
+                cssClassImage = "alert-icon-warning alert-icon col-xs-1 col-sm-1 col-lg-1 col-md-1";
+                cssClassText = "col-xs-8 col-sm-8 col-lg-8 col-md-8";
+            }
+            var mainDiv = new TagBuilder("div");
+            mainDiv.AddCssClass(cssClass);
+
+            var divImage = new TagBuilder("div");
+            divImage.AddCssClass(cssClassImage);
+
+            var divText = new TagBuilder("div");
+           divText.AddCssClass(cssClassText);
+
+            var messgageTitle = new TagBuilder("strong");
+            messgageTitle.SetInnerText(messageBox.MessageTitle);
+
+            var messageSubTitle = new TagBuilder("p");
+            messageSubTitle.InnerHtml = messageBox.SubMessage;
+
+            var unorderedList = new TagBuilder("ul");
+            unorderedList.AddCssClass("PaddingDiv");
+            
+            string[] errors = new string[3];
+            if (messageBox.ErrorList != null && messageBox.ErrorList != "")
+            {
+                errors = messageBox.ErrorList.Split(',');
+            }
+
+            foreach (var value in errors)
+            {
+                if (value != null)
+                {
+                    var listItem = new TagBuilder("li");
+                    listItem.SetInnerText(value);
+                    //listItem.InnerHtml = value.ToString();
+                    unorderedList.InnerHtml += listItem.ToString();
+                }
+            }
+
+            string closeTag = "<a href='#' class='close' data-dismiss='alert' aria-label='close'>&times;</a>";
+            divText.InnerHtml = messgageTitle.ToString(TagRenderMode.Normal) + messageSubTitle.ToString(TagRenderMode.Normal) + unorderedList.ToString(TagRenderMode.Normal);
+            mainDiv.InnerHtml = closeTag + divImage.ToString(TagRenderMode.Normal) + divText.ToString(TagRenderMode.Normal);
+
+            return MvcHtmlString.Create(mainDiv.ToString(TagRenderMode.Normal));
+        }
+    }
+}
+
+==============================
+
+MessageBox.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace MvcValidation.Utilities
+{
+    public class MessageBox
+    {
+        public MessageType Type { get; set; }
+        public string MessageTitle { get; set; }
+        public string SubMessage { get; set; }
+        public string ErrorList { get; set; }
+    }
+}
+
+
+======================
+
+
+Views
+Home/Login.cs
+
+
+@using MvcValidation.Utilities;
+@model MvcValidation.Models.Login
+
+@*@model IEnumerable<ConferenceRoomBooking.Web.Models.ConferenceRoom>*@
+@{
+    ViewBag.Title = "Login";
+}
+@Styles.Render("~/Content/site.css")
+<h2>Login Form :</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Username, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-xs-3 col-sm-3 col-lg-3 col-md-3">
+                @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+            <div class="col-xs-1 col-sm-1 col-lg-1 col-md-1">
+                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-xs-3 col-sm-3 col-lg-3 col-md-3">
+                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+            <div class="col-xs-1 col-sm-1 col-lg-1 col-md-1">
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Login" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+    <div>
+        @if (ViewBag.messageBox != null)
+        {
+            MessageBox msg = new MessageBox();
+            msg.Type = ViewBag.messageBox.Type;
+            msg.MessageTitle = ViewBag.messageBox.MessageTitle;
+            msg.SubMessage = ViewBag.messageBox.SubMessage;
+            msg.ErrorList = ViewBag.messageBox.ErrorList;
+            @Html.ValidationWarning(msg);
+        }
+    </div>
+}
+
+======================
+
+site.css
+
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+
+=========================
+
+MessageBox.css
+
 
 .alert-icon {
     float: left;
